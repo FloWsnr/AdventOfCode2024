@@ -6,45 +6,40 @@
 #include <vector>
 #include <iterator>
 
-// Recursive function to check if the numbers are in a monotonic decrease
-bool check_monotonic_decrease(const std::vector<int>& numbers, int index) {
-    // abort for last number
-    if (index == numbers.size() - 1) { return true; }
 
-    // check if current number is smaller than next number (than it would not be decreasing)
-    if (numbers[index] <= numbers[index + 1]) {
-        return false;
+bool check_safe(const std::vector<int>& numbers) {
+    bool increasing = true;
+    bool decreasing = true;
+
+    for (int i = 0; i < numbers.size() - 1; ++i) {
+        int diff = abs(numbers[i] - numbers[i + 1]);
+        if (diff > 3 || diff < 1) {
+            return false;
+        }
+
+        if (numbers[i] > numbers[i + 1]) {
+            increasing = false;
+        }
+        if (numbers[i] < numbers[i + 1]) {
+            decreasing = false;
+        }
     }
-    // addtional check for difference > 3
-    if (abs(numbers[index] - numbers[index + 1]) > 3)
-    {
-        return false;
-    }
-    // recursive call
-    return check_monotonic_decrease(numbers, index + 1);
+    return increasing || decreasing;
 }
 
-
-bool check_monotonic_increase(const std::vector<int>& numbers, int index) {
-    // abort for last number
-    if (index == numbers.size() - 1) { return true; }
-
-    int current = numbers[index];
-    int next = numbers[index + 1];
-
-    // check if current number is larger than next number
-    if (current >= next) {
-        return false;
+bool check_safe_part2(const std::vector<int>& numbers) {
+    if (check_safe(numbers)) {
+        return true;
     }
-    // addtional check for difference > 3
-    if (abs(current - next) > 3)
-    {
-        return false;
+    for (int i = 0; i < numbers.size(); ++i) {
+        std::vector<int> new_numbers = numbers;
+        new_numbers.erase(new_numbers.begin() + i);
+        if (check_safe(new_numbers)) {
+            return true;
+        }
     }
-    // recursive call
-    return check_monotonic_increase(numbers, index + 1);
+    return false;
 }
-
 
 int main() {
     std::ifstream file("day2_input.txt"); // Open the file
@@ -55,6 +50,7 @@ int main() {
 
     std::string line;
     int num_correct = 0;
+    bool safe;
     while (std::getline(file, line)) { // Read the file line by line
 
         // convert line into array of ints
@@ -69,11 +65,10 @@ int main() {
             numbers.push_back(number);
         }
 
-        bool increase = check_monotonic_increase(numbers, 0);
-        bool decrease = check_monotonic_decrease(numbers, 0);
-
-        if (increase || decrease) {
-            ++num_correct;
+        // safe = check_safe(numbers);
+        safe = check_safe_part2(numbers);
+        if (safe) {
+            num_correct++;
         }
 
 
@@ -81,5 +76,6 @@ int main() {
     std::cout << "Number of correct lines" << std::endl;
     std::cout << num_correct << std::endl;
     file.close(); // Close the file
+    // test_main();
     return 0;
 }
